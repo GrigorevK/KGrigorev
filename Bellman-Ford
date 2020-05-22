@@ -1,0 +1,687 @@
+unit Unit1;   // модуль формы
+
+interface
+
+uses   // стандартные модули
+  Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
+  Dialogs, StdCtrls, Grids, ExtCtrls, ComCtrls, Menus, ExtDlgs, Spin, XPMan;
+
+type
+  TForm1 = class(TForm)     // типы  объектов графического интерфейса и процедуры модуля
+    Image1: TImage;
+    MainMenu1: TMainMenu;
+    N1: TMenuItem;
+    N2: TMenuItem;
+    N3: TMenuItem;
+    N5: TMenuItem;
+    OpenDialog1: TOpenDialog;
+    SaveDialog1: TSaveDialog;
+    N4: TMenuItem;
+    PopupMenu1: TPopupMenu;
+    N7: TMenuItem;
+    N8: TMenuItem;
+    N9: TMenuItem;
+    GroupBox1: TGroupBox;
+    PageControl1: TPageControl;
+    TabSheet2: TTabSheet;
+    Label1: TLabel;
+    StringGrid3: TStringGrid;
+    Edit1: TSpinEdit;
+    TabSheet3: TTabSheet;
+    Button10: TButton;
+    Button9: TButton;
+    Button5: TButton;
+    Button6: TButton;
+    GroupBox2: TGroupBox;
+    Button2: TButton;
+    Button1: TButton;
+    Button4: TButton;
+    XPManifest1: TXPManifest;
+    GroupBox3: TGroupBox;
+    Label2: TLabel;
+    Label3: TLabel;
+    vv: TSpinEdit;
+    Label4: TLabel;
+    isv: TSpinEdit;
+    Button11: TButton;
+    StringGrid2: TStringGrid;
+    Label5: TLabel;
+    Button7: TButton;
+    Button8: TButton;
+    Label6: TLabel;
+    N6: TMenuItem;
+    procedure FormCreate(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure Image1MouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure redrow;
+    procedure Button1Click(Sender: TObject);
+    procedure Button9Click(Sender: TObject);
+   procedure Button5Click(Sender: TObject);
+    procedure Button4Click(Sender: TObject);
+    procedure Button10Click(Sender: TObject);
+    procedure N5Click(Sender: TObject);
+    procedure N2Click(Sender: TObject);
+    procedure N3Click(Sender: TObject);
+    procedure N4Click(Sender: TObject);
+    procedure StringGrid3KeyPress(Sender: TObject; var Key: Char);
+    procedure Edit1Change(Sender: TObject);
+    procedure Image1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure N7Click(Sender: TObject);
+    procedure N8Click(Sender: TObject);
+    procedure N9Click(Sender: TObject);
+    procedure Button6Click(Sender: TObject);
+    procedure Button7Click(Sender: TObject);
+    procedure Button8Click(Sender: TObject);
+    procedure N10Click(Sender: TObject);
+    procedure Button11Click(Sender: TObject);
+    procedure patch;
+    procedure StringGrid3KeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure vvChange(Sender: TObject);
+    procedure isvChange(Sender: TObject);
+    procedure N6Click(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+    vv = record
+    x,y:Integer;
+    num:Integer;
+  end;
+  var
+  Form1: TForm1;
+  pos,pos2:Integer;
+ n, xx,yy,xb,yb,ugol:Integer;
+  ver,reb,reb2,del_ver:Boolean;
+  vers:array[1..100] of vv;
+  
+implementation
+
+uses Math, Unit2;
+
+{$R *.dfm}
+
+function findver(x,y,rad:integer):Integer;   // находит  вершину в графе на которую указали сейчас.
+var i:Integer;
+begin
+findver:=0;
+
+for i:=1 to pos do begin
+  if (x>vers[i].x-rad) and (x<vers[i].x+rad) and (y>vers[i].y-rad) and (y<vers[i].y+rad) then
+  findver:=i;
+end;
+
+end;
+
+
+
+procedure TForm1.patch;
+var x,y,i,j,in_v,out_v:Integer; // вспомогательные переменные
+begin
+if pos =0 then exit;
+n:=stringgrid3.ColCount-1;
+//Image1.Canvas.Pen.Style:=psDot ;
+Image1.Canvas.Pen.Width:=2;
+Image1.Canvas.Pen.Color:= clBlue;
+Image1.Canvas.Brush.Color:= clNAvy;
+      x:=strtoint(StringGrid2.Cells[0,0]);
+      Image1.Canvas.MoveTo(vers[x].x,vers[x].y);
+
+for i:=0 to StringGrid2.ColCount-1 do  begin  // рисуем путь
+      x:=strtoint(StringGrid2.Cells[i,0]);
+      Image1.Canvas.lineTo(vers[x].x,vers[x].y);
+
+end;
+Image1.Canvas.Pen.Color:= clBlack;
+Image1.Canvas.Pen.Width:=1;
+
+for i:=1 to n do  begin  //  вершины - кружки с номером вершины
+   Image1.Canvas.Brush.Color:=RGB(234,228,36);
+  Image1.Canvas.Ellipse(vers[i].x-10,vers[i].y-10,vers[i].x+10,vers[i].y+10);
+  Image1.Canvas.TextOut(vers[i].x-3,vers[i].y-6,inttostr(i));
+end;
+
+
+
+end;
+
+
+procedure TForm1.redrow;  // перерисовка изображения графа на картинке
+var i,j,in_v,out_v:Integer; // вспомогательные переменные
+begin
+if pos =0 then exit;
+n:=stringgrid3.ColCount-1;
+Image1.Canvas.Pen.Mode := pmCopy;
+Image1.Canvas.Brush.Color := clWhite;
+//Image1.Canvas.Brush.Color := RGB(100,152,239);//RGB(57,115,234);
+Image1.Canvas.Rectangle(0,0,Image1.Width,Image1.Height);  // очистка канваса без мигания
+
+for i:=1 to n do    // рисуем ребра
+for j:=1 to n do
+   if  strtoint(StringGrid3.Cells[i,j])>0 then
+      begin
+      Image1.Canvas.MoveTo(vers[i].x,vers[i].y);
+      Image1.Canvas.lineTo(vers[j].x,vers[j].y);
+
+       /// красная точка направления
+        Image1.Canvas.pen.Color := clRed;
+        Image1.Canvas.Brush.Color := clRed;
+        Image1.Canvas.ellipse(round(vers[j].x+(vers[i].x- vers[j].x)*0.9)-4 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.9 )-4 ,
+        round(vers[j].x+(vers[i].x- vers[j].x)*0.9)+4 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.9 )+4  );
+
+        Image1.Canvas.ellipse(round(vers[j].x+(vers[i].x- vers[j].x)*0.93)-3 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.93 )-3 ,
+        round(vers[j].x+(vers[i].x- vers[j].x)*0.93)+3 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.93 )+3  );
+
+        Image1.Canvas.ellipse(round(vers[j].x+(vers[i].x- vers[j].x)*0.95)-2 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.95 )-2 ,
+        round(vers[j].x+(vers[i].x- vers[j].x)*0.95)+2 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.95 )+2  );
+
+
+        Image1.Canvas.ellipse(round(vers[j].x+(vers[i].x- vers[j].x)*0.97)-1 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.97 )-1 ,
+        round(vers[j].x+(vers[i].x- vers[j].x)*0.97)+1 ,round(vers[j].y+(vers[i].y- vers[j].y)*0.97 )+1  );
+
+        Image1.Canvas.Pen.Color := clBlack;
+        Image1.Canvas.Brush.Color := clWhite;
+        Image1.Canvas.pen.Style:= psSolid  ;
+       /// 
+
+end;
+
+//Image1.Canvas.Pen.Mode := pmXor;
+//Image1.Canvas.Brush.Color := clWhite;
+
+for i:=1 to n do  begin  //  вершины - кружки с номером вершины
+   Image1.Canvas.Brush.Color:=RGB(234,228,36);
+  Image1.Canvas.Ellipse(vers[i].x-10,vers[i].y-10,vers[i].x+10,vers[i].y+10);
+  Image1.Canvas.TextOut(vers[i].x-3,vers[i].y-6,inttostr(i));
+end;
+
+
+end;
+
+procedure TForm1.FormCreate(Sender: TObject);
+begin
+pos:=0;
+n:=0;
+end;
+
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+reb:=false;
+xx:=-100;
+yy:=-100;
+Image1.Canvas.Pen.Mode := pmNotXor;
+ver:= True;
+end;
+
+procedure TForm1.Image1MouseMove(Sender: TObject; Shift: TShiftState; X,
+  Y: Integer);
+begin
+
+if ver then begin
+//Image1.Canvas.Pen.Color:=rgb(0,0,0);
+Image1.Canvas.Ellipse(xx-10,yy-10,xx+10,yy+10);
+xx:=x;
+yy:=y;
+Image1.Canvas.Ellipse(x-10,y-10,x+10,y+10);
+//  Image1.Canvas.Pen.Color:=clblack;
+end;
+
+if reb2 then begin
+//Image1.Canvas.Pen.Color:=rgb(248,51,20);
+Image1.Canvas.MoveTo(xb,yb);
+Image1.Canvas.LineTo(xx,yy);
+xx:=x;
+yy:=y;
+Image1.Canvas.MoveTo(xb,yb);
+Image1.Canvas.LineTo(x,y);
+//  Image1.Canvas.Pen.Color:=clblack;
+end else begin
+  xb:=x;
+  yb:=y;
+
+end;
+
+end;
+
+procedure TForm1.Image1MouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+
+var j,k,i,i2,xx,yy:integer;
+begin
+If del_ver then begin   // удаление  вершины
+//найти удаляемую вершину
+  k:=findver(x,y,10); //удалить все ребра которые входят и выходят их этой вершины
+ver:= false;
+reb := false;
+reb2:=false;
+del_ver:=false;
+  if k=0 then   exit;
+ for i:=1 to StringGrid3.ColCount-1   do
+ if i>=k then vers[i]:=vers[i+1];
+
+ // будем копировать на единицу назад столбцы если они стоят правее удаляемой вершины
+  for i:=1 to StringGrid3.RowCount-1 do
+  for j:=1 to StringGrid3.RowCount-1 do
+  if j>=k then  StringGrid3.Cells[i,j]:=StringGrid3.cells[i,j+1];
+
+  for j:=1 to StringGrid3.RowCount-1 do
+  for i:=1 to StringGrid3.RowCount-1 do
+  if i>=k then  StringGrid3.Cells[i,j]:=StringGrid3.cells[i+1,j];
+
+
+pos:=pos-1;
+edit1.Value:=edit1.Value-1;
+StringGrid3.cells[0,0]:='*';
+redrow;
+Image1.Canvas.Pen.Mode := pmCopy;
+
+Button2.Caption:= 'Разместить вершину '+IntToStr(pos+1);
+end;
+
+
+If ver then begin
+inc(pos);
+vers[pos].x:=x;
+vers[pos].y:=y;
+xx:=-100;yy:=-100;
+vers[pos].num:=pos;
+
+ver:=FAlse;
+Button2.Caption:= 'Разместить вершину '+IntToStr(pos+1);
+If pos>1 then begin
+      StringGrid3.ColCount:=StringGrid3.ColCount+1;
+      StringGrid3.RowCount:=StringGrid3.RowCount+1;
+      Edit1.Value :=pos;
+end;
+for i:=1 to edit1.value+1 do begin     // рисуем новые номера вершин после изм количества вершин
+  StringGrid3.Cells[i,0]:= inttostr(i);
+  StringGrid3.Cells[0,i]:= inttostr(i);
+end;
+
+for i:=1 to edit1.value do begin
+  for i2:=1 to edit1.value do begin
+    if StringGrid3.Cells[i2,i]='' then
+    StringGrid3.cells[i2,i]:='0';
+  end;
+end;
+redrow;// перерисуем что получилось после добавления вершины
+end;
+
+if reb2 then begin
+try
+reb:=false;
+reb2:=false;
+xx:=0;
+yy:=0;
+  //form1.Caption:=inttostr(findver(x,y));
+    i:=findver(x,y,10);
+  If i <>0  then begin // если указали все верно из одного кружка вершины в другой то добавим в матрицу смежности запись
+  StringGrid3.Cells[findver(x,y,10),findver(xb,yb,10)]:='1';
+  end;
+  StringGrid3.cells[0,0]:='*';
+  redrow;
+   except;
+    redrow;
+   end;
+end;
+
+if reb then begin
+try
+  xb:=x;
+  yb:=y;
+  xx:=x;
+  yy:=y;
+  reb2:=True;
+  Image1.Canvas.MoveTo(0,0);
+  Image1.Canvas.LineTo(x,y);
+  i:=findver(x,y,10);
+  If i <>0  then begin
+    inc(n);
+    StringGrid3.Cells[pos2,0]:=inttostr(i);
+
+
+  i:=findver(x,y,10); // найти  к какой вершине мы сейчас добавляем ребро
+
+
+  end;
+   except;
+   reb:=false; // неудачная попытка добавить ребро
+   end;
+
+end;
+
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+begin
+xx:=0;
+yy:=0;
+Image1.Canvas.Pen.Mode := pmNotXor;
+reb:=true;
+end;
+
+
+
+
+
+procedure TForm1.Button9Click(Sender: TObject);
+var ns,ms, x,y,i,j:Integer;
+  step:real;
+begin
+
+
+step:= 4*3.14/ edit1.value;
+ns:=(edit1.value);
+
+for i:=1 to edit1.value do
+ if ((vers[i].x=0) or( vers[i].y=0 )) then
+          begin
+        //  x:= 300+ trunc(cos(i*step+ns+ugol/100)*100);
+        //  y:= 150+ trunc(sin(i*step+ns+ugol/100)*100);
+
+          while ((findver(x,y,20)>0) or (x<50) or ((y+50)>image1.Height) or (y<50) or ((x+50)>image1.Width)) do begin
+          ns:=image1.Width-random(image1.Width*2);
+          ms:=image1.Height-random(image1.Height*2);
+          x:=ns+ 300+ trunc(cos(i*step+ms+ugol/100)*100);
+          y:=ms+ 150+ trunc(sin(i*step+ns+ugol/100)*100);
+        end;
+
+            vers[i].x:=x; vers[i].y:=y;
+
+     end;
+
+redrow;
+end;
+
+
+
+procedure TForm1.Button5Click(Sender: TObject);
+var x,y,pp:Integer;
+var i,j:Integer;
+  step:real;
+begin
+
+
+step:= 2*3.14/ edit1.value;
+
+for i:=1 to edit1.value do begin
+           vers[i].x:= 300+ trunc(cos(i*step+ugol/100)*100);
+           vers[i].y:= 150+ trunc(sin(i*step+ugol/100)*100);
+
+end;
+
+redrow;
+end;
+
+procedure TForm1.Button4Click(Sender: TObject);
+begin
+
+del_ver:=true;
+
+
+end;
+
+procedure TForm1.Button10Click(Sender: TObject);
+var i,j:Integer;
+begin
+ // очистка грида
+
+n:=edit1.Value;
+pos:=edit1.Value;
+
+for i:=1 to n do
+  for j:=1 to n do
+     StringGrid3.cells[j,i]:='0';
+
+
+
+Button9.Click;
+end;
+
+procedure TForm1.N5Click(Sender: TObject);
+begin
+Halt(0);
+end;
+
+procedure TForm1.N2Click(Sender: TObject);
+begin
+button7.Click; // вызов открытия из меню
+end;
+
+
+
+
+
+procedure TForm1.N3Click(Sender: TObject);
+begin
+   button8.click; // вызов сохранения их меню
+end;
+
+procedure TForm1.N4Click(Sender: TObject); //  новый граф
+begin
+Button10.click; // вначале очистка грида
+edit1.Value:=1; // убираем лишние строки и столбцы
+StringGrid2.ColCount:=0;
+label5.Caption:='Результат';
+Button9.click; // обновляем картинку
+Button2.Caption:= 'Разместить вершину '+IntToStr(pos+1);
+end;
+
+procedure TForm1.StringGrid3KeyPress(Sender: TObject; var Key: Char);
+begin
+if (Sender as TStringGrid).col=(Sender as TStringGrid).row // нельзя ставить на главное диагонали
+ then   key := Chr(0);
+
+case Key of
+#8,'0'..'9':;  // цифры и клавиша <Backspace>
+else key := Chr(0); // остальные символы запрещены
+
+end;
+end;
+procedure TForm1.Edit1Change(Sender: TObject);
+var i,j : integer;
+begin
+try
+StringGrid3.ColCount:=edit1.Value+1;// при  изменении спинбокса нужно перерисовать матрицу
+StringGrid3.RowCount:=edit1.Value+1;
+n:=edit1.Value;
+pos:=edit1.Value;
+// надписи о номерах
+for i:=1 to n+1 do begin
+  StringGrid3.Cells[i,0]:= inttostr(i);
+  StringGrid3.Cells[0,i]:= inttostr(i);
+end;
+
+for i:=1 to n do
+  for j:=1 to n do begin
+    if StringGrid3.Cells[j,i]='' then
+    StringGrid3.cells[j,i]:='0';
+  end;
+button9.Click; // обновить каринку
+Button2.Caption:= 'Разместить вершину '+IntToStr(pos+1);
+except;
+end;
+end;
+
+procedure TForm1.Image1MouseDown(Sender: TObject; Button: TMouseButton; // по нажатию на кнопку и даже
+  Shift: TShiftState; X, Y: Integer);
+begin
+ if button <>mbLeft then // если  нажали левой кнопкой
+PopupMenu1.Popup(Mouse.CursorPos.X, Mouse.CursorPos.y); // показать  контекстное меню
+end;
+
+procedure TForm1.N7Click(Sender: TObject);
+begin
+Button2.Click ;
+end;
+
+procedure TForm1.N8Click(Sender: TObject);
+begin
+Button1.Click ;
+end;
+
+procedure TForm1.N9Click(Sender: TObject);
+begin
+Button4.Click;
+end;
+
+procedure TForm1.Button6Click(Sender: TObject);
+var i :integer;
+begin
+for i:=1 to edit1.value do begin
+vers[i].x:=0;  vers[i].y:=0;
+end;
+Button9.Click ;
+end;
+
+procedure TForm1.Button7Click(Sender: TObject);
+var
+   f:          TextFile;
+   iTmp, i, k: Integer;
+   strTemp:    String;
+ begin
+ if (not OpenDialog1.Execute()) then exit;
+   StringGrid2.ColCount:=0;
+   AssignFile(f,OpenDialog1.FileName);
+   Reset(f);
+   with StringGrid3 do
+   begin
+     // Get number of columns
+    Readln(f, iTmp);
+     ColCount := iTmp;
+     // Get number of rows
+    Readln(f, iTmp);
+     RowCount := iTmp;
+     // loop through cells & fill in values
+    edit1.Value:=ColCount-1;
+
+    for i := 0 to ColCount - 1 do
+       for k := 0 to RowCount - 1 do
+       begin
+         Readln(f, strTemp);
+         Cells[i, k] := strTemp;
+       end;
+   end;
+   CloseFile(f);
+  if StringGrid3.ColCount>10 then   button6.Click else button5.Click;// обновим изображение
+
+  Button2.Caption:= 'Разместить вершину '+IntToStr(pos+1);
+  end;
+
+procedure TForm1.Button8Click(Sender: TObject);
+
+ var
+   f:    TextFile;
+   i, k: Integer;
+ begin
+if (not SaveDialog1.Execute()) then exit;   // проверяем открылся ли диалог загрузки
+   AssignFile(f, SaveDialog1.FileName);
+   Rewrite(f);
+   with StringGrid3 do
+   begin
+     // Write number of Columns/Rows 
+    Writeln(f, ColCount);
+     Writeln(f, RowCount);
+     // loop through cells 
+    for i := 0 to ColCount - 1 do
+       for k := 0 to RowCount - 1 do
+         Writeln(F, Cells[i, k]);
+   end;
+   CloseFile(F);
+end;
+
+procedure TForm1.N10Click(Sender: TObject);
+begin
+button11.Click; // вызов решения гамильтонова цикла
+end;
+
+procedure TForm1.Button11Click(Sender: TObject);
+const
+n0=100; {vershini}
+inf =100*100*100;
+var step,i,j,k,i_res: integer;  p,dost :array of array of integer;
+
+procedure FindRoute ( ii, jj : integer); // восстановление путей для алгоритма Флойда
+begin
+ if (p[ii,jj] = jj) then // если  путь найден то добавим его в массив путей
+ begin   inc(step);
+//	 route[step]= j;
+   StringGrid2.Cells[step,0]:=inttostr(jj+1);
+  end
+ else //  а  иначе пойдем рекурсив через смежные вершины
+	begin
+   FindRoute (ii, p[ii,jj]);
+   FindRoute (p[ii,jj], jj);
+	end;
+end;
+
+begin
+if pos<2 then exit;
+ SetLength(dost, pos,pos);
+  SetLength(p, pos,pos) ;
+  for i:=1 to  pos do
+  for j:=1 to  pos do
+  begin
+  if StringGrid3.Cells[j,i]='0'
+  then dost[i-1,j-1]:=inf else
+  dost[i-1,j-1]:=strtoint(StringGrid3.Cells[j,i]);
+  p[i-1,j-1]:=j-1;
+  end;
+
+  for k:=0 to  pos-1 do  // ищем можно ли сократить путь через третью вершину К
+   for i:=0 to  pos-1 do
+     for j:=0 to  pos-1 do
+
+   if ((i<>k) and (j<>k))  then
+		if ((dost[i,k] + dost[k,j]) < dost[i,j])// если  путь через эту вершину оказался короче заменим его
+       then
+		begin
+    dost[i,j]:= dost[i,k] + dost[k,j];
+			  p[i,j]:= k; // запушем что тепреь путь из и в ж лежит через к
+		end;
+
+
+  if dost[ isv.Value-1  ,   vv.Value-1]=inf
+  then  begin Application.MessageBox('Пути  межу этими вершинами НЕТ', '',  MB_OK);
+  StringGrid2.ColCount:=0;
+  end
+  else
+  begin
+   step:=0;
+
+  StringGrid2.Cells[0,0]:=inttostr(isv.Value);
+  FindRoute( isv.Value-1  ,   vv.Value-1);
+  StringGrid2.ColCount:=step+1;
+  label5.Caption:='Длина пути '+' = '+inttostr(dost[ isv.Value-1  ,   vv.Value-1])+' ';
+  patch;
+  end;
+end;
+
+procedure TForm1.StringGrid3KeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+redrow;
+end;
+
+procedure TForm1.vvChange(Sender: TObject);
+begin
+ if vv.Value>pos then vv.Value:=pos;
+end;
+
+procedure TForm1.isvChange(Sender: TObject);
+begin
+ if isv.Value>pos then isv.Value:=pos;
+end;
+
+procedure TForm1.N6Click(Sender: TObject);
+begin
+form2.show;
+end;
+
+end.
